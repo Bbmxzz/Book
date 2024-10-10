@@ -9,9 +9,10 @@ from roboflow import Roboflow
 import numpy as np
 from PIL import Image as PILImage, ExifTags
 import tempfile
+from config import Config
 
 app = Flask(__name__)
-rf = Roboflow(api_key="GjIhJ9A525bYsGiVQIRA")
+rf = Roboflow(api_key=Config.ROBOFLOW_API_KEY)
 project = rf.workspace("kwsr").project("book-gtby9")
 model = project.version(6).model
 
@@ -19,10 +20,10 @@ model = project.version(6).model
 logging.basicConfig(level=logging.DEBUG)
 app.secret_key = os.urandom(24)
 
-# Path to your service account key file
-cred = credentials.Certificate("bookai-7cf88-firebase-adminsdk-a4x7v-0b958e4360.json")
+# Initialize Firebase
+cred = credentials.Certificate(Config.FIREBASE_ADMIN_CREDENTIALS)
 firebase_admin.initialize_app(cred, {
-    'storageBucket': 'bookai-7cf88.appspot.com'
+    'storageBucket': Config.FIREBASE_STORAGE_BUCKET
 })
 db = firestore.client()
 
@@ -266,4 +267,4 @@ def fetch_book_images(uid, book_titles_with_ids):
     return book_images
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=3000)
