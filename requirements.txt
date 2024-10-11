@@ -1,4 +1,3 @@
-Flask
 easyocr
 Pillow
 numpy
