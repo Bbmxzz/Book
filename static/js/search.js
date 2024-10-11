@@ -5,12 +5,10 @@ let button = document.querySelector('.button');
 let input = document.querySelector('input[type="file"]');
 let file;
 
-// Open file picker when button is clicked
 button.onclick = () => {
     input.click();
 };
 
-// When a file is selected via the file picker
 input.addEventListener('change', function() {
     file = this.files[0];
     if (file) {
@@ -20,7 +18,6 @@ input.addEventListener('change', function() {
     }
 });
 
-// Handle drag events
 dragArea.addEventListener('dragover', (event) => {
     event.preventDefault();
     dragText.textContent = 'Release to Upload';
@@ -37,12 +34,11 @@ dragArea.addEventListener('drop', (event) => {
     event.preventDefault();
     file = event.dataTransfer.files[0];
     if (file) {
-        console.log('Dropped file:', file); // Log dropped file
+        console.log('Dropped file:', file);
         displayFile();
     }
 });
 
-// Display the selected file
 function displayFile() {
     let fileType = file.type;
     let validExtensions = ['image/jpeg', 'image/jpg', 'image/png'];
@@ -64,18 +60,16 @@ function displayFile() {
 
 const form = document.getElementById('searchForm');
 form.addEventListener('submit', (event) => {
-    event.preventDefault(); // Prevent the default form submission
+    event.preventDefault(); 
 
-    // Check if a file has been selected
     if (!file) {
         alert('Please select a file to upload');
         return;
     }
 
     const formDatasearch = new FormData(form);
-    formDatasearch.append('file', file); // Add file to FormData
+    formDatasearch.append('file', file); 
 
-    // Display "searching" message
     document.getElementById('searchStatus').style.display = 'flex';
 
     auth.onAuthStateChanged(async (user) => {
@@ -87,7 +81,6 @@ form.addEventListener('submit', (event) => {
                 if (firestoreDoc.exists()) {
                     const firestoreUid = firestoreDoc.data().uid;
 
-                    // Send file to Python back-end for OCR
                     const response = await fetch('/process-image', {
                         method: 'POST',
                         body: formDatasearch
