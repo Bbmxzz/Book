@@ -1,6 +1,5 @@
-Flask 
-firebase-admin 
-easyocr 
-Pillow 
-numpy 
-roboflow 
+Flask
+easyocr
+Pillow
+numpy
+roboflow
