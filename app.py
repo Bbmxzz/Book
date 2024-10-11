@@ -267,4 +267,4 @@ def fetch_book_images(uid, book_titles_with_ids):
     return book_images
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=3000)
