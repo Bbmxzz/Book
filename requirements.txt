@@ -1,5 +1,0 @@
-Flask
-easyocr
-Pillow
-numpy
-roboflow

@@ -1,16 +1,24 @@
 from flask import Flask, request, render_template, redirect, url_for, jsonify
 from werkzeug.utils import secure_filename
+import logging
 import easyocr
 from roboflow import Roboflow
 import numpy as np
 from PIL import Image as PILImage, ExifTags
 import os
+from pythainlp import correct
+from pythainlp import word_tokenize
+
+corrections_file = "corrections.txt"
 
 app = Flask(__name__)
 rf = Roboflow(api_key="GjIhJ9A525bYsGiVQIRA")
 project = rf.workspace("kwsr").project("book-gtby9")
 model = project.version(6).model
+reader = easyocr.Reader(['th', 'en'])
 
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
 
 @app.route('/')
 def index():
@@ -53,6 +61,7 @@ def results():
 def process_image():
     try:
         file = request.files.get('file')
+        logging.debug(file)
 
         if not file:
             return jsonify({'error': 'No file provided'}), 400
@@ -73,14 +82,14 @@ def process_image():
                 elif orientation_value == 8:
                     img = img.rotate(90, expand=True)
         except Exception as e:
-            pass
+            logging.error(f"Error reading EXIF data: {e}")
 
-        img.thumbnail((600, 800)) 
+        img.thumbnail((600, 800))  # Resize to 800x800
         temp_file_path = f"./{secure_filename(file.filename)}"
         img.save(temp_file_path)  # บันทึกไฟล์ชั่วคราวลงในเซิร์ฟเวอร์
 
         result = model.predict(temp_file_path, confidence=40, overlap=30).json()
-    
+        logging.debug(f"Roboflow result: {result}")
 
         if result.get('predictions'):
             prediction = result['predictions'][0]
@@ -90,21 +99,45 @@ def process_image():
             bottom = prediction['y'] + (prediction['height'] / 2)
 
             image_crop = img.crop((left, top, right, bottom)).convert('L')
+            logging.debug("Image cropped successfully")
 
-            reader = easyocr.Reader(['th', 'en'])
+            # OCR การอ่านข้อความจากภาพที่ถูกครอป
             text = reader.readtext(np.array(image_crop), detail=0, paragraph=True)
             ocr_result = " ".join(text).strip()
+            logging.debug(f"OCR result: {ocr_result}")
+            proc = word_tokenize(ocr_result, engine='newmm')
+            corrections = load_corrections(corrections_file)
 
-            # ลบไฟล์ชั่วคราวหลังจากเสร็จสิ้น
+            # Correct the OCR result
+            corrected_result = correct_ocr_result(proc, corrections)
+
             os.remove(temp_file_path)
-
-            return jsonify({'ocr_result': ocr_result}), 200
+            return jsonify({'ocr_result':corrected_result}), 200
         else:
             os.remove(temp_file_path)
+            logging.error("No predictions made by Roboflow")
             return jsonify({'error': 'No predictions made by Roboflow'}), 400
 
     except Exception as e:
+        logging.error(f"An error occurred: {str(e)}")
         return jsonify({'error': str(e)}), 500
+    
+def load_corrections(corrections_file):
+    corrections = {}
+    with open(corrections_file, 'r', encoding='utf-8') as file:
+        for line in file:
+            original, corrected = line.strip().split(',')
+            corrections[original] = corrected
+    return corrections
+
+def correct_ocr_result(proc, corrections):
+    corrected_results = []
+    for word in proc:
+        # Check if the detected word needs correction
+        corrected_word = corrections.get(word, word)
+        corrected_results.append(corrected_word)
+    # Join the corrected results into a single string
+    return "".join(corrected_results)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
