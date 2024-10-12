@@ -1,0 +1,6 @@
+Flask
+easyocr
+Pillow
+numpy
+roboflow
+pythainlp
