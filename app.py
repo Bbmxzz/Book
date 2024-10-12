@@ -9,7 +9,6 @@ import os
 from pythainlp import word_tokenize
 
 corrections_file = "corrections.txt"
-port = int(os.environ.get('PORT', 5000))
 
 app = Flask(__name__)
 rf = Roboflow(api_key="GjIhJ9A525bYsGiVQIRA")
@@ -140,4 +139,4 @@ def correct_ocr_result(proc, corrections):
     return "".join(corrected_results)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
