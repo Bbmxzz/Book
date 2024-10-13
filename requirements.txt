@@ -4,3 +4,4 @@ Pillow
 numpy
 roboflow
 pythainlp
+werkzeug
