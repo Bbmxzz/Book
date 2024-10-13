@@ -83,33 +83,31 @@ form.addEventListener('submit', async (event) => {
     
                 if (firestoreDoc.exists()) {
                     const firestoreUid = firestoreDoc.data().uid;
+                    const storageRef = ref(storage, `${firestoreUid}/${file.name}`);
+                    const snapshot = await uploadBytes(storageRef, file);
+    
+                    const downloadURL = await getDownloadURL(snapshot.ref);
+                    console.log(JSON.stringify({ image_url: downloadURL }));
 
                     const formData = new FormData(form);
                     formData.append('file', file);
     
-                    // Send file to Python back-end for processing
-                    const response = await fetch('/process-image', {
+                    // Send file URL to Python back-end for OCR
+                    const response = await fetch('/process-image', {  // ตรวจสอบ endpoint ที่นี่
                         method: 'POST',
                         body: formData
                     });
-
-                    // Log the entire response for debugging
-                    const responseBody = await response.text();
-                    console.log('Response Body:', responseBody);
-
-                    // Parse the response only if it's in JSON format
-                    let data;
-                    try {
-                        data = JSON.parse(responseBody);
-                    } catch (error) {
-                        console.error('Failed to parse response:', error);
-                        throw new Error('Invalid response format.');
-                    }
-
+                    
+                    console.log('Response Status:', response.status); // Log the response status
+                    console.log('Response OK:', response.ok); 
+    
                     if (response.ok) {
-                        const ocrResult = data.ocr_result; // Ensure data.ocr_result exists
+                        const data = await response.json();
+                        const ocrResult = data.ocr_result;
+    
+                        // Save OCR result and image URL to Firestore
                         const uploadData = {
-                            image_url: data.image_url, // Assuming image_url is returned from the backend
+                            image_url: downloadURL,
                             namebook: ocrResult
                         };
                         await addDoc(collection(db, "uploads", firestoreUid, "book"), uploadData);
@@ -118,8 +116,8 @@ form.addEventListener('submit', async (event) => {
                         document.getElementById('modalMessage').textContent = 'File uploaded and processed successfully!';
                         document.getElementById('myModal').style.display = 'block';
                     } else {
-                        const errorData = data; 
-                        console.error('Error response data:', errorData);
+                        const errorData = await response.json(); // แปลงการตอบกลับข้อผิดพลาด
+                        console.error('Error response data:', errorData); // Log the error response data
                         throw new Error('Failed to process the image: ' + errorData.error);
                     }
                 } else {
@@ -130,7 +128,7 @@ form.addEventListener('submit', async (event) => {
                 document.getElementById('modalMessage').textContent = `Error: ${error.message}`;
                 document.getElementById('myModal').style.display = 'block';
             } finally {
-                document.getElementById('uploadStatus').style.display = 'none'; 
+                document.getElementById('uploadStatus').style.display = 'none'; // ซ่อนสถานะการอัพโหลด
             }
         } else {
             document.getElementById('modalMessage').textContent = 'User not logged in. Please log in to upload files.';

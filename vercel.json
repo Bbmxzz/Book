@@ -1,15 +1,17 @@
 {
     "version": 2,
-    "builds": [
-      {
-        "src": "app.py",
-        "use": "@vercel/python"
+    "build": {
+      "env": {
+        "PIP_NO_CACHE_DIR": "1"
+      },
+      "commands": {
+        "install": "pip install --no-cache-dir -r requirements.txt"
       }
-    ],
+    },
     "routes": [
       {
         "src": "/(.*)",
-        "dest": "app.py"
+        "dest": "/app.py"
       }
     ]
   }
