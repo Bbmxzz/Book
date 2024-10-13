@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+
     <title>Add book</title>
     <link rel="stylesheet" href="../static/css/addbook.css">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 </head>
 <body>
     <header>
@@ -31,7 +32,7 @@
                 <span class="support">Supports: JPEG, JPG, PNG</span>
             </div>
             <div class="search">
-                <button type="submit" id="button-s" class="button-s">Add</button>
+                <button type="submit" id="button-s" class="button-s">ADD</button>
                 <div id="myModal" class="modal">
                     <div class="modal-content">
                         <div class="close">
@@ -45,7 +46,12 @@
             </div>
         </form>
         <div id="uploadStatus" style="display: none;">
-            <div class="loader-message">Uploading...</div>
+            <div class="loader-message">
+                <div class="img-gif">
+                    <img src="/static/image/open-book.gif" alt="">
+                </div>
+                <span>Uploading...</span>
+            </div>
         </div>
     </div>
     <script type="module" src="/static/js/add.js"></script>
