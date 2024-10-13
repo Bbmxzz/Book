@@ -2,18 +2,22 @@ version: 0.2
 
 phases:
   install:
-    runtime-versions:
-      python: 3.x # เปลี่ยนเป็นเวอร์ชันที่คุณต้องการ
     commands:
-      - echo "Installing dependencies"
+      - echo Installing dependencies...
       - pip install -r requirements.txt
+      
   pre_build:
     commands:
-      - echo "Running pre-build commands"
+      - echo Pre-build phase complete.
+
   build:
     commands:
-      - echo "Building the application"
-      - eb deploy # ใช้คำสั่ง deploy ไปยัง Elastic Beanstalk
+      - echo Build started on `date`
+      - python app.py  # รันคำสั่งสำหรับรันแอปพลิเคชัน
+
+  post_build:
+    commands:
+      - echo Build complete.
 
 artifacts:
   files:
