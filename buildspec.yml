@@ -4,21 +4,15 @@ phases:
   install:
     commands:
       - echo Installing dependencies...
-      - pip install -r requirements.txt
-      
-  pre_build:
-    commands:
-      - echo Pre-build phase complete.
-
+      - pip install -r requirements.txt  # ติดตั้ง dependencies
   build:
     commands:
       - echo Build started on `date`
-      - python app.py  # รันคำสั่งสำหรับรันแอปพลิเคชัน
-
+      - python app.py  # หรือคำสั่งสำหรับรันโปรเจกต์ของคุณ
   post_build:
     commands:
-      - echo Build complete.
+      - echo Build completed on `date`
 
 artifacts:
   files:
-    - '**/*'
+    - '**/*'  # ไฟล์ที่ต้องการจัดเก็บหลังการ build
